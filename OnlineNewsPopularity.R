@@ -1,13 +1,15 @@
 # Online News Popularity
 rm(list=ls())
 
-onpdata <- read.csv('Final/OnlineNewsPopularity/OnlineNewsPopularity.csv')
-
-library(dplyr)
+onpdata <- read.csv('OnlineNewsPopularity/OnlineNewsPopularity.csv')
 library(stringr)
 library(caret)
+library(randomForest)
+library(ggplot2)
+library(dplyr)
 
 dataLite <- onpdata[,-1]
+#  dataLite <- as.data.frame(scale(dataLite))
 
 inTr <- createDataPartition(dataLite$shares, p=0.70, list=F)
 train <- dataLite[inTr,]
@@ -20,16 +22,13 @@ test <- dataLite[-inTr,]
 
 #There are no NA values
 
-#Predict with Random Forest Classifier
 set.seed(0123)
 
 simple = lm(shares ~ ., data=train)
 
-
-#Gradient Boosting
-glm = train(shares ~ ., data = train, method = 'glm')
-
 #Random Forest
-control = trainControl(method = "repeatedcv", number=10, repeats=1)
-forest = train(shares ~ ., data = train, method = 'rf', trControl = control)
+forest = randomForest(shares ~ ., data=train, ntree=50, importance = T)
+forest
 
+forestResult = predict(forest, test)
+varImp(forest)
